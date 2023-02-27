@@ -8,7 +8,7 @@ import base64
 from bs4 import BeautifulSoup
 import time
 
-# ___________________________________________________________
+# ______________________________________________________________________________________________________________________
 imap_server = "imap.yandex.ru"
 
 if os.path.exists("passwords.txt"):
@@ -24,7 +24,7 @@ else:
     password = input().strip()
     time.sleep(0.2)
 
-# ___________________________________________________________
+# ______________________________________________________________________________________________________________________
 
 print("[+] Trying to log in...")
 try:
@@ -36,7 +36,7 @@ except:
     sys.exit(0)
 print("[+] Login completed successfully!")
 
-# ___________________________________________________________
+# ______________________________________________________________________________________________________________________
 
 if not os.path.exists("passwords.txt"):
     while True:
@@ -53,9 +53,16 @@ if not os.path.exists("passwords.txt"):
             break
         elif a == 'no':
             break
+# ______________________________________________________________________________________________________________________
 
+print("List of mail boxes:\n")
+boxlist = imap.list()[1]
+for i in boxlist:
+    i = i.decode('UTF-8')
+    zn = i.find("|") + 3
+    print(i[zn:])
 # print("[-] HA-HA-HA, now I will send it to my owner!")
-print("[+] Please, write a name of mail box")
+print("\n[+] Please, write a name of mail box")
 box = input().strip()
 time.sleep(0.2)
 
@@ -65,7 +72,7 @@ if (res != "OK"):
     input()
     sys.exit(0)
 
-# ______________________________________________________________
+# ______________________________________________________________________________________________________________________
 
 print("[+] Since when do I need to upload files?")
 time.sleep(0.2)
@@ -90,12 +97,12 @@ except:
     input()
     sys.exit(0)
 time.sleep(0.5)
-# ______________________________________________________________
+# ______________________________________________________________________________________________________________________
 
 
 print("[+] What's the name of the student's work?")
 work = input().strip()
-# ______________________________________________________________
+# ______________________________________________________________________________________________________________________
 
 
 res, mails = imap.uid('search', "ALL")
@@ -105,7 +112,7 @@ if (res != "OK"):
     input()
     sys.exit(0)
 
-# ___________________________________________________________
+# ______________________________________________________________________________________________________________________
 
 mails = mails[0].split()
 if not os.path.exists(work):
@@ -119,10 +126,13 @@ if not os.path.exists(work):
 os.chdir(f"./{work}")
 
 for j in mails:
-    res, msg = imap.uid('fetch', j, '(RFC822)')
-    msg = email.message_from_bytes(msg[0][1])
-    date = email.utils.parsedate_tz(msg["Date"])
-    date = datetime.datetime(*date[0:7])
+    try:
+        res, msg = imap.uid('fetch', j, '(RFC822)')
+        msg = email.message_from_bytes(msg[0][1])
+        date = email.utils.parsedate_tz(msg["Date"])
+        date = datetime.datetime(*date[0:7])
+    except:
+        continue
     if (d1 <= date and date <= d2):
         theme = decode_header(msg["Subject"])[0][0].decode()
         # if os.path.exists(" ".join(theme) + ".c"):
