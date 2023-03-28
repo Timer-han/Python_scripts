@@ -7,7 +7,7 @@ from email.header import decode_header
 import base64
 from bs4 import BeautifulSoup
 import time
-
+import getpass
 # ______________________________________________________________________________________________________________________
 imap_server = "imap.yandex.ru"
 
@@ -21,7 +21,7 @@ else:
     time.sleep(0.2)
 
     print("[+] Please, write your password.")
-    password = input().strip()
+    password = getpass.getpass().strip()
     time.sleep(0.2)
 
 # ______________________________________________________________________________________________________________________
