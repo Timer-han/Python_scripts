@@ -125,6 +125,7 @@ for j in mails:
     try:
         res, msg = imap.uid('fetch', j, '(RFC822)')
         msg = email.message_from_bytes(msg[0][1])
+        # Working with the theme:
         subj = decode_header(msg['Subject'])[0][0].decode().replace(" ", "").replace(" ", "").replace(" ", "")
         if work.lower() not in subj.lower():
             continue
@@ -140,6 +141,9 @@ for j in mails:
                 print(f"Can't create/open path {subj[1]}")
                 continue
         os.chdir(subj[1])
+        # theme[0] - group number
+        # theme[1] - student's name
+        # theme[2] - name of work
 
         date = email.utils.parsedate_tz(msg["Date"])
         date = datetime.datetime(*date[0:7])
@@ -149,15 +153,13 @@ for j in mails:
 
 
     if (d1 <= date and date <= d2):
-        # if os.path.exists(" ".join(f"{subj[1]} {subj[0]}") + ".c"):
-        #     os.chdir("../")
-        #     continue
         t = 0
         for part in msg.walk():
+            # creating the student's file:
             file_name = f"{subj[2]}_{subj[1]}_{str(t)}.c"
             fout = open(file_name, "w+")
-            # if part.get_content_maintype() == 'text' or part.get_content_subtype() == 'plain':
             try:
+                # decoding mail, formatting and writing:
                 htmml = base64.b64decode(part.get_payload()).decode()
                 htmml = BeautifulSoup(htmml, "html.parser")
                 if str(htmml).count("<br") >= 1 or str(htmml).count("<div") >= 1:
@@ -181,11 +183,13 @@ for j in mails:
                 pass
 
             fout.close()
+            # if file empty:
             try:
                 if os.stat(file_name).st_size <= 0:
                     os.remove(file_name)
             except:
                 pass
+            # rewriting date:
             try:
                 os.utime(file_name,
                          (os.path.getatime(file_name),
