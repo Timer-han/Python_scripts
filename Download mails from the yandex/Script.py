@@ -81,21 +81,17 @@ try:
     # d1 = datetime.datetime(1111, 1, 1)
     d1 = datetime.datetime(*list(map(int, input().strip().split())))
 except:
-    print("[-] Bad input date")
-    input()
-    sys.exit(0)
+    d1 = datetime.datetime(1000, 1, 1)
 time.sleep(0.2)
 
-print("[+] Up to what time do I need to upload files?")
+print("[+] Before what time do I need to upload files?")
 time.sleep(0.2)
 print("[+] Please, write 'YYYY MM DD hh mm' without ''")
 try:
     # d2 = datetime.datetime(2222, 2, 2)
     d2 = datetime.datetime(*list(map(int, input().strip().split())))
 except:
-    print("[-] Bad input date")
-    input()
-    sys.exit(0)
+    d2 = datetime.datetime.now()
 time.sleep(0.5)
 # ______________________________________________________________________________________________________________________
 
@@ -129,18 +125,37 @@ for j in mails:
     try:
         res, msg = imap.uid('fetch', j, '(RFC822)')
         msg = email.message_from_bytes(msg[0][1])
+        subj = decode_header(msg['Subject'])[0][0].decode().replace(" ", "").replace(" ", "").replace(" ", "")
+        if work.lower() not in subj.lower():
+            continue
+        point = subj.rfind(".") + 1
+        if point != 0 and len(subj) > point:
+            subj = [subj[:6], subj[6:point], subj[point:].lower()]
+        else:
+            subj = [subj[:6], subj[6:], "unknown_work"]
+        if not os.path.exists(subj[1]):
+            try:
+                os.mkdir(subj[1])
+            except:
+                print(f"Can't create/open path {subj[1]}")
+                continue
+        os.chdir(subj[1])
+
         date = email.utils.parsedate_tz(msg["Date"])
         date = datetime.datetime(*date[0:7])
+
     except:
         continue
+
+
     if (d1 <= date and date <= d2):
-        theme = decode_header(msg["Subject"])[0][0].decode()
-        # if os.path.exists(" ".join(theme) + ".c"):
+        # if os.path.exists(" ".join(f"{subj[1]} {subj[0]}") + ".c"):
         #     os.chdir("../")
         #     continue
         t = 0
         for part in msg.walk():
-            fout = open(theme + "_" + str(t) + ".c", "w+")
+            file_name = f"{subj[2]}_{subj[1]}_{str(t)}.c"
+            fout = open(file_name, "w+")
             # if part.get_content_maintype() == 'text' or part.get_content_subtype() == 'plain':
             try:
                 htmml = base64.b64decode(part.get_payload()).decode()
@@ -167,10 +182,18 @@ for j in mails:
 
             fout.close()
             try:
-                if os.stat(theme + "_" + str(t) + ".c").st_size <= 0:
-                    os.remove(theme + "_" + str(t) + ".c")
+                if os.stat(file_name).st_size <= 0:
+                    os.remove(file_name)
+            except:
+                pass
+            try:
+                os.utime(file_name,
+                         (os.path.getatime(file_name),
+                          date.timestamp()))
             except:
                 pass
             t += 1
+    os.chdir("../")
+    print(f"Письмо от {subj[1]} было обработано")
 
 os.chdir("../")
