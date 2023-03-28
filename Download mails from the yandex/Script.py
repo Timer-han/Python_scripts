@@ -105,7 +105,7 @@ work = input().strip()
 # ______________________________________________________________________________________________________________________
 
 
-res, mails = imap.uid('search', "ALL")
+res, mails = imap.uid('search', None, f'SINCE {d1.strftime("%d-%b-%Y")} BEFORE {d2.strftime("%d-%b-%Y")}')
 
 if (res != "OK"):
     print("[-] Can't get mails")
